@@ -1,0 +1,36 @@
+﻿@model MVC.ModelView.EmployeeCreateView
+@{
+    ViewBag.Title = "Employee";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Employee</h2>
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "", enctype = "multipart/form-data" }))
+{
+
+    <div class="row container-fluid">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            <label for="InsertName">Fullname : @Html.ValidationMessageFor(model => model.Fullname, "",new { @class = "text-danger" }) </label>
+            <br />
+            @Html.EditorFor(model => model.Fullname, new { @class = "form-control" })
+        </div>
+
+        <div class="form-group">
+            <label for="Address">Address : @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" }) </label>
+            <br />
+            @Html.EditorFor(model => model.Address, new { @class = "form-control" })
+        </div>
+        <div class="form-group">
+            <label for="Phone">Phone : @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" }) </label>
+            <br />
+            @Html.EditorFor(model => model.Phone, new { @class = "form-control" })
+        </div>
+        <button type="submit" class="btn btn-primary">Insert</button>
+        @*<button type="button" class="btn btn-danger float-right" data-dismiss="modal">Cancel</button>*@
+
+    </div>
+}
+
+

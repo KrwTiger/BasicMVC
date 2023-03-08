@@ -1,0 +1,331 @@
+﻿@model MVC.Models.Book
+
+@{
+    var selectbook = (IEnumerable<MVC.Models.Book>)ViewBag.data;
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+<link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.16/dist/sweetalert2.min.css" rel="stylesheet" />
+<link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+<link href="~/Content/toastr.min.css" rel="stylesheet" />
+
+
+<h2>Books</h2>
+<div class="row">
+    <button class='btn btn-sm btn-primary mt-2' data-toggle='modal' data-target='#insert-book-modal'>Add Book</button>
+    <div class="modal fade" id="insert-book-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Insert Book</h4>
+
+                </div>
+
+                <div class="modal-body">
+                    <form action="#" method="post">
+
+                        <div class="form-group">
+                            <label for="inserttitle">Title</label>
+                            <input class="form-control" type="text" id="inserttitle" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="insertISBN">ISBN</label>
+                            <input class="form-control" type="text" id="insertISBN" name="ISBN" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="insert">Insert</button>
+                        <button type="button" class="btn btn-danger float-right" data-dismiss="modal">Cancel</button>
+                    </form>
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<div class="row">
+
+    <table class="table table-striped" id="myTable2">
+        <thead class="bg-info">
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Title</th>
+                <th scope="col">ISBN</th>
+                <th scope="col">Edit</th>
+                <th scope="col">Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<div class="row">
+
+    <div class="modal fade" id="edit-book-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Edit Book</h4>
+
+                </div>
+
+                <!-- Modal body -->
+                <div class="modal-body">
+                    @using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "", enctype = "multipart/form-data", @id = "frmItem" }))
+                    {
+                        @Html.HiddenFor(model => model.Id)
+                        <div class="form-group">
+                            <label for="title">Title</label>
+                            <input class="form-control" type="text" id="UpdateTitle" name="UpdateTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ISBN">ISBN</label>
+                            <input class="form-control" type="text" id="UpdateISBN" name="UpdateISBN" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Update</button>
+                        <button type="button" class="btn btn-danger float-right" data-dismiss="modal">Cancel</button>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section scripts{
+
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.16/dist/sweetalert2.all.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.13.2.min.js"></script>
+    <script src="~/Scripts/toastr.min.js"></script>
+
+
+    <script>
+        var table
+
+        String.prototype.format = function () {
+            a = this;
+            for (k in arguments) {
+                a = a.replace("{" + k + "}", arguments[k])
+            }
+            return a
+        }
+
+
+        //ใช้ jquerydatatable
+        $(document).ready(function () {
+            $('#myTable').DataTable();
+
+
+             //ทำฟังชั่น activatejQueryTable
+            activatejQueryTable()
+
+            $('#frmItem').validate({
+                errorClass: 'input-validation-error',
+                rules: {
+                    UpdateTitle: { required: true },
+                    UpdateISBN: { required: true, maxlength: 80 },
+
+
+                },
+                messages: {
+                    UpdateTitle: "*",
+                    UpdateISBN: { required: '*', maxlength: 'Filename exceed 80 chars !' },
+
+                },
+                submitHandler: function (form) {
+
+                    var ajaxConfig = {
+                        type: "post",
+                        url: "@(Url.Action("EditItem"))",
+                        data: {
+                            Id: $('#Id').val(),
+                            title: $('#UpdateTitle').val(),
+                            ISBN: $('#UpdateISBN').val(),
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                console.log(response.data )
+                                table.ajax.reload()
+                                /*alert("update")*/
+                                $('#edit-book-modal').modal('hide')
+
+                                toastr["success"]("Book is updated")
+
+                            }
+                            else
+                            {
+                                toastr['error'](response.data)
+                            }
+                        }
+                    }
+                    $.ajax(ajaxConfig)
+                    /*console.log('Con: ' + $('#UpdateTitle').val())*/
+
+                }
+            })
+
+        });
+
+        $('#frmItem').submit(function (e) {
+
+            e.preventDefault()
+        })
+
+        //ทำฟังชั่นเคลียร์ค่า table เพื่อให้ table รับค่าใหม่ที่พึ่งส่งเข้าไป
+        function activatejQueryTable() {
+            if (table != null) {
+                table.clear()
+                table.destroy()
+            }
+
+        //สร้าง table
+            table = $("#myTable2").DataTable({
+                pageLength: 10,
+                dom: 'Bfrtip',
+                /*scrollY: 500,*/
+                scrollCollapse: true,
+                searching: true,
+                paging: true,
+                order: [[0, "asc"]],
+                language: {
+                    decimal: ",",
+                    thousands: "."
+                },
+                // ให้ ajax เรียกใช้ฟังก์ชั่น GetItemList จาก contrller ดึงข้อมูลลง table
+                ajax: {
+                    url: "@(Url.Action("GetItemList"))",
+                    dataSrc: "",
+                    //data: { id: $('#Id').val() },
+                    type: 'POST'
+                },
+
+                columns: [
+                    {
+                        data: "Id",
+                        //ทำคำสั่งสร้างอันดับจากข้อมูลในdatabase
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
+                    },
+                    { data: "Title" },
+                    { data: "ISBN" },
+                    {
+                        data: "Id",
+                        className: "editItem",
+                        render: function (data) {
+                            return '<a href=# class="btn btn-warning" onclick="ModalEditFunction({0})"> <i class=\"fa fa-edit \"></i> </a>'.format(data)
+                        }
+                    },
+                    {
+                        data: "Id",
+                        className: "deleteItem",
+                        render: function (data) {
+                            return '<a href=# class="btn btn-danger" onclick="DeleteFunction({0})"> <i class=\"fa fa-trash \"></i> </a>'.format(data)
+
+                        }
+                    }
+
+                ],
+
+            })
+        }
+        function ModalEditFunction(id)
+        {
+            var ajaxConfig = {
+                type: 'post',
+                url: "@(Url.Action("GetBook"))",
+                data: { id: id },
+                success: function (response) {
+                    if (response.success) {
+                        console.log(response.data)
+                        $('#Id').val(response.data[0].Id)
+                        $('#UpdateTitle').val(response.data[0].Title)
+                        $('#UpdateISBN').val(response.data[0].ISBN)
+
+                    }
+                    else
+                    {
+                        toastr['error'](response.data)
+                    }
+                }
+            }
+            $.ajax(ajaxConfig)
+
+            $('#edit-book-modal').modal()
+
+        }
+
+
+        //ทำคำสั่ง delete
+        function DeleteFunction(id)
+        {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.value) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteBook")',
+                        type: 'POST',
+                        data: { id: id}
+                    }).done(function (data) {
+                        if (data.Result == "OK") {
+                            Swal.fire(
+                                'Deleted!',
+                                'Your item has been deleted.',
+                                'success'
+                            )
+                            //reload ค่า table ให้ทำการรับค่าใหม่
+                            table.ajax.reload()
+
+                        }
+                        else if (data.Result.Message) {
+                            Swal.fire(
+                                'Deleted!',
+                                data.Result.Message,
+                                'error'
+                            )
+
+                        }
+                    }).fail(function () {
+                         Swal.fire(
+                                'Error!',
+                                'There is something wrong. Please try again.',
+                                'error'
+                            )
+                    })
+
+                }
+            })
+        }
+    </script>
+}

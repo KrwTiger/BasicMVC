@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="7d09712d66a04df9b696c3f13cbe2eff" Name="Diagram1">
+        <EntityTypeShape EntityType="MVCModel.Book" Width="1.5" PointX="0.75" PointY="1" IsExpanded="true" />
+        <EntityTypeShape EntityType="MVCModel.Employee" Width="1.5" PointX="0.75" PointY="5.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="MVCModel.Transaction" Width="1.5" PointX="3" PointY="1" IsExpanded="true" />
+        <AssociationConnector Association="MVCModel.FK_Transaction_Book" ManuallyRouted="false" />
+        <AssociationConnector Association="MVCModel.FK_Transaction_Employee" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="MVCModel.Address" Width="1.5" PointX="3" PointY="5" />
+        <AssociationConnector Association="MVCModel.FK_Address_Employee" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

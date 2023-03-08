@@ -1,0 +1,539 @@
+﻿@model MVC.Models.Transaction
+
+
+@{
+    ViewBag.Title = "Borrow Books";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.16/dist/sweetalert2.min.css" rel="stylesheet" />
+<link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+<link href="~/Content/toastr.min.css" rel="stylesheet" />
+
+<h2>@ViewBag.Title</h2>
+
+<div class="row">
+    <button class='btn btn-sm btn-primary mt-2' data-toggle='modal' data-target='#borrow-book-modal' onclick="">Borrow a books</button>
+    <div class="modal fade" id="borrow-book-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Insert Book</h4>
+
+                </div>
+
+                <div class="modal-body">
+                    @using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "", enctype = "multipart/form-data", @id = "BorrowBook" }))
+                    {
+
+                        <div class="row container-fluid">
+
+                            <label for="BorrowEmployee">Employee</label>
+                            <select class="form-control" name="Employee" id="Employee"></select>
+
+                        </div>
+                        <br>
+
+                        <div class="row container-fluid">
+                            <table class="table table-striped " style="width:100%" id="TableBook">
+                                <thead class="bg-primary">
+                                    <tr>
+                                        <th class="col-md-1">
+                                            ID
+                                        </th>
+                                        <th class="col-md-5">
+                                            Books Name
+                                        </th>
+                                        <th class="col-md-5">
+                                            ISBN
+                                        </th>
+                                        <th class="col-md-1">
+                                            Select
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+
+                        </div>
+                        <br />
+
+                        <div class="row container-fluid ">
+
+                            <button type="submit" class="btn btn-success" onclick="Borrow()">Save</button>
+                            <button type="button" class="btn btn-danger float-right" data-dismiss="modal">Cancel</button>
+
+                        </div>
+
+                    }
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+
+    <table class="table table-striped " id="myTable">
+        <thead class="bg-primary">
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Employee</th>
+                <th scope="col">Bookname</th>
+                <th scope="col">Borrow Date</th>
+                <th scope="col">Edit</th>
+                <th scope="col">Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<div class="row">
+
+    <div class="modal fade" id="edit-book-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Edit Book</h4>
+
+                </div>
+
+                <!-- Modal body -->
+                <div class="modal-body">
+                    @using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "", enctype = "multipart/form-data", @id = "UpdateBorrow" }))
+                    {
+                        @Html.HiddenFor(model => model.Id)
+                        @Html.HiddenFor(model => model.BookId)
+                        <div class="row container-fluid">
+
+                            <label for="UpdateEmployee">Employee</label>
+
+                            <select class="form-control" name="UpdateEmployee" id="UpdateEmployee"></select>
+
+                        </div>
+                        <br>
+                        <div class="row container-fluid" id="Book">
+                            <label for="UpdateBook">BorrowBook</label>
+
+                            <select class="form-control" name="UpdateBook" id="UpdateBook"></select>
+
+                        </div>
+                        <br />
+
+                        <div class="row container-fluid ">
+                            <button type="submit" class="btn btn-success">Save</button>
+                            <button type="button" class="btn btn-danger float-right" data-dismiss="modal">Cancel</button>
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section scripts{
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.16/dist/sweetalert2.all.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.13.2.min.js"></script>
+    <script src="~/Scripts/toastr.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+
+    <script>
+
+        var table
+        var tableBook
+
+        String.prototype.format = function () {
+            a = this;
+            for (k in arguments) {
+                a = a.replace("{" + k + "}", arguments[k])
+            }
+            return a
+        }
+
+        var ajaxEmployee = {
+            url: 'Employee',
+            type: 'GET',
+            success: function (response) {
+                if (response.success) {
+                    Employee = response.data
+                    $.each(Employee, function (i, Employee) {
+                        $('#Employee').append($("<option></option>").val(Employee.Id).html(Employee.Fullname))
+                    })
+                    $.each(Employee, function (i, Employee) {
+                        $('#UpdateEmployee').append($("<option></option>").val(Employee.Id).html(Employee.Fullname))
+                    })
+
+                    //console.log(response.data)
+                }
+            }
+        }
+        $.ajax(ajaxEmployee)
+
+        var ajaxBook = {
+            url: 'Book',
+            type: 'GET',
+            success: function (response) {
+                if (response.success) {
+                    Book = response.data
+                    $.each(Book, function (i, Book) {
+                        $('#UpdateBook').append($("<option></option>").val(Book.Id).html(Book.Title))
+                    })
+
+                    //console.log(Book)
+                }
+            }
+        }
+        $.ajax(ajaxBook)
+
+        function Borrow() {
+
+            var checkBook = []
+            $("input[name='Book[]']:checked").each(function () {
+                checkBook.push(parseInt($(this).val()));
+                console.log(checkBook)
+            });
+
+            var Employee = parseInt($("#Employee").val());
+            console.log(Employee)
+
+            var json = {
+                checkBook: checkBook,
+                Employee: Employee
+            };
+
+                    var ajaxConfig = {
+                        type: "post",
+                        url: "@(Url.Action("BorrowBook"))",
+                        data: {
+                            "json": JSON.stringify(json)
+                        },
+                        dataType: "json",
+                        success: function (response) {
+                            if (response.success) {
+                            console.log(response.data)
+                            /*alert("update")*/
+                                $('#borrow-book-modal').modal('hide')
+                                $("#BorrowBook")[0].reset();
+                                table.ajax.reload()
+                                tableBook.ajax.reload()
+                                toastr["success"]("Book is Borrow..")
+
+
+                                $('#UpdateBook').empty()
+                                $('#UpdateBook').load($.ajax(ajaxBook))
+
+
+                            }
+                            else {
+                                toastr['error'](response.Message)
+                            }
+                        }
+                    }
+                    $.ajax(ajaxConfig)
+
+                    $('#BorrowBook').submit(function (e) {
+
+                        e.preventDefault()
+                    })
+        }
+
+        $(document).ready(function () {
+            //ไม่ให้เกิด error หาโหลดไม่เจอ
+            jQuery.fn.load = function (callback) { $(window).on("load", callback) };
+
+            activeTableBook()
+            activatejQueryTable()
+            //$('#BorrowBook').reload()
+
+            $('#UpdateBorrow').validate({
+                errorClass: 'input-validation-error',
+                rules: {
+
+                    UpdateEmployee: {
+                        required: true
+                    },
+
+                    UpdateBook: {
+                        required: true
+                    },
+
+                },
+
+                messages: {
+                    UpdateName:
+                    {
+                        required: '<p style="color: red;"> *Please enter a valid Name. <p>',
+
+                    },
+                    UpdateBook:
+                    {
+                        required: '<p style="color: red;"> *Please enter a valid Name. <p>',
+
+                    },
+
+                },
+                submitHandler: function (form) {
+
+                    var ajaxConfig = {
+                        type: "post",
+                        url: "@(Url.Action("UpdateBorrow"))",
+                        data: {
+                            Id: $('#Id').val(),
+                            EmployeeId: $('#UpdateEmployee').val(),
+                            BookId: $('#UpdateBook').val()
+
+                        },
+                        success: function (response) {
+                            if (response.success) {
+
+                                //console.log(response.data)
+                                /*alert("update")*/
+                                $('#edit-book-modal').modal('hide')
+                                $("#UpdateBorrow")[0].reset();
+                                table.ajax.reload()
+                                tableBook.ajax.reload()
+                                toastr["success"]("Employee is Update..")
+
+                                $('#UpdateBook').empty()
+                                $('#UpdateBook').load($.ajax(ajaxBook))
+
+
+                            }
+                            else {
+                                toastr['error'](response.Message)
+                            }
+                        }
+                    }
+                    $.ajax(ajaxConfig)
+
+                }
+            })
+
+            $('#UpdateBorrow').submit(function (e) {
+
+                e.preventDefault()
+            })
+
+        });
+
+
+        function activatejQueryTable() {
+            if (table != null) {
+                table.clear()
+                table.destroy()
+
+            }
+
+            table = $("#myTable").DataTable({
+                pageLength: 10,
+                dom: 'Bfrtip',
+                /*scrollY: 500,*/
+
+                scrollCollapse: true,
+                searching: true,
+                paging: true,
+                order: [[0, "asc"]],
+                language: {
+                    decimal: ",",
+                    thousands: "."
+                },
+
+                ajax: {
+                    url: "@(Url.Action("TableBorrow"))",
+                    dataSrc: "",
+                    //data: { id: $('#Id').val() },
+                    type: 'POST',
+
+                },
+
+                columns: [
+                    {
+                        data: "Id",
+                        //ทำคำสั่งสร้างอันดับจากข้อมูลในdatabase
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
+                    },
+                    {
+                        data: "Fullname"
+                    },
+                    {
+                        data: "Title"
+                    },
+                    {
+                        data: "ModifiedDate",
+                        render: function (data) {
+                            return moment(data).format("DD-MM-YYYY HH:mm:ss");
+                        }
+
+                    },
+                    {
+                        data: "Id",
+                        className: "editItem",
+                        render: function (data) {
+                            return '<a href=# class="btn btn-warning" onclick="ModalEditFunction({0})"> <i class=\"fa fa-edit \"></i> </a>'.format(data)
+                        }
+                    },
+                    {
+
+                        data: "Id",
+                        className: "deleteItem",
+                        render: function (data) {
+                            return '<a href=# class="btn btn-danger" onclick="DeleteFunction({0})"> <i class=\"fa fa-trash \"></i> </a>'.format(data)
+
+                        }
+                    }
+
+                ],
+
+            });
+        }
+
+        function activeTableBook() {
+
+            if (tableBook != null) {
+                tableBook.clear()
+                tableBook.destroy()
+
+            }
+
+            tableBook = $("#TableBook").DataTable({
+                pageLength: 5,
+                dom: 'Bfrtip',
+                info: false,
+                responsive: true,
+                scrollY: 300,
+                scrollCollapse: true,
+                searching: true,
+                paging: false,
+
+                language: {
+                    decimal: ",",
+                    thousands: "."
+                },
+
+                ajax: {
+                    url: "@(Url.Action("TableBook"))",
+                    dataSrc: "",
+                    type: 'POST',
+                },
+
+                columns: [
+                    {
+                        data: "Id",
+                        //ทำคำสั่งสร้างอันดับจากข้อมูลในdatabase
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
+                    },
+                    {
+                        data: "Title"
+                    },
+                    {
+                        data: "ISBN"
+                    },
+                    {
+                        data: "Id",
+                        render: function (data) {
+                            return '<input class="checkbox" type="checkbox" name="Book[]" id="Book" value="{0}" />'.format(data)
+
+                        }
+                    }
+                ]
+            })
+        }
+
+       function ModalEditFunction(id)
+        {
+            var ajaxConfig = {
+                type: 'post',
+                url: "@(Url.Action("GetBorrow"))",
+                data: { id: id },
+                success: function (response) {
+                    if (response.success) {
+                        //console.log(response.data)
+                        $('#Id').val(response.data[0].Id)
+                        $('#UpdateEmployee option[value="' + response.data[0].EmployeeId + '"]').prop("selected", true)
+                        //$('#Book option[value="' + response.data[0].BookId + '"]').prop("selected", true)
+                    }
+                    else
+                    {
+                        toastr['error'](response.data)
+                    }
+                }
+            }
+            $.ajax(ajaxConfig)
+
+            $('#edit-book-modal').modal()
+
+        }
+
+         function DeleteFunction(id)
+        {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.value) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteBorrow")',
+                        type: 'POST',
+                        data: { id: id}
+                    }).done(function (data) {
+                        if (data.Result == "OK") {
+                            Swal.fire(
+                                'Deleted!',
+                                'Your item has been deleted.',
+                                'success'
+                            )
+                            //reload ค่า table ให้ทำการรับค่าใหม่
+                            table.ajax.reload()
+                            tableBook.ajax.reload()
+
+                            $('#UpdateBook').empty()
+                            $('#UpdateBook').load($.ajax(ajaxBook))
+                        }
+
+                    }).fail(function () {
+                         Swal.fire(
+                                'Error!',
+                                'There is something wrong. Please try again.',
+                                'error'
+                            )
+                    })
+
+                }
+            })
+        }
+
+    </script>
+}

@@ -1,0 +1,183 @@
+﻿@model MVC.Models.Transaction
+
+@{
+    ViewBag.Title = "Home Page";
+}
+<link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css" rel="stylesheet" />
+<link href="https://cdn.datatables.net/responsive/2.4.0/css/responsive.bootstrap.min.css" rel="stylesheet" />
+<link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+
+<div class="jumbotron">
+    <h1>Library Schaffner EMC.</h1>
+    Official website.
+    <p class="lead"></p>
+    <p><a href="https://www.schaffner.com/" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Library</h2>
+        <table class="table table-striped" id="myTable2">
+            <thead class="bg-warning">
+                <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Bookname</th>
+                    <th scope="col">Update in library</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <h2>Last Borrow</h2>
+        <table class="table table-striped" id="myTable">
+            <thead class="bg-primary">
+                <tr>
+
+                    <th scope="col">Id</th>
+                    <th scope="col">Employee</th>
+                    <th scope="col">Bookname</th>
+                    <th scope="col">Borrow Date</th>
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+@section scripts{
+
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.4.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.4.0/js/responsive.bootstrap.min.js"></script>
+
+    <script>
+
+        var table
+        var table2
+
+        String.prototype.format = function () {
+            a = this;
+            for (k in arguments) {
+                a = a.replace("{" + k + "}", arguments[k])
+            }
+            return a
+        }
+
+        $(document).ready(function () {
+
+            activatejQueryTable()
+
+        });
+
+        function activatejQueryTable() {
+            if (table != null) {
+                table.clear()
+                table.destroy()
+
+            }
+            table = $("#myTable").DataTable({
+                pageLength: 10,
+                dom: 'Bfrtip',
+                /*scrollY: 500,*/
+                scrollCollapse: true,
+                searching: true,
+                paging: true,
+                order: [[0, "asc"]],
+                language: {
+                    decimal: ",",
+                    thousands: "."
+                },
+
+                ajax: {
+                    url: "@(Url.Action("TableBorrow"))",
+                    dataSrc: "",
+                    //data: { id: $('#Id').val() },
+                    type: 'POST',
+
+                },
+
+                columns: [
+                    {
+                        data: "Id",
+                        //ทำคำสั่งสร้างอันดับจากข้อมูลในdatabase
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
+                    },
+                    {
+                        data: "Fullname"
+                    },
+                    {
+                        data: "Title"
+                    },
+                    {
+                        data: "ModifiedDate",
+                        render: function (data) {
+                            return moment(data).format("DD-MM-YYYY HH:mm:ss");
+                        }
+
+                    },
+
+                ],
+            });
+
+            if (table2 != null) {
+                table2.clear()
+                table2.destroy()
+
+            }
+            table2 = $("#myTable2").DataTable({
+                pageLength: 10,
+                dom: 'Bfrtip',
+                /*scrollY: 500,*/
+                scrollCollapse: true,
+                searching: true,
+                paging: true,
+                order: [[0, "asc"]],
+                language: {
+                    decimal: ",",
+                    thousands: "."
+                },
+
+                ajax: {
+                    url: "@(Url.Action("TableBook"))",
+                    dataSrc: "",
+                    //data: { id: $('#Id').val() },
+                    type: 'POST',
+
+                },
+                columns: [
+                    {
+                        data: "Id",
+                        //ทำคำสั่งสร้างอันดับจากข้อมูลในdatabase
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
+                    },
+                    {
+                        data: "Title"
+                    },
+                    {
+                        data: "ModifiedDate",
+                        render: function (data) {
+                            return moment(data).format("DD-MM-YYYY HH:mm:ss");
+                        }
+
+                    }
+
+                ],
+
+            })
+        }
+
+    </script>
+
+
+}
